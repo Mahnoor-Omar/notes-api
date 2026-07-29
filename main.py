@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI, HTTPException, status, Depends
 from pydantic import BaseModel
 
@@ -10,50 +12,80 @@ app = FastAPI(
 )
 
 
-# Pydantic model
 class Note(BaseModel):
     id: int
     title: str
     content: str
 
 
-# In-memory storage
 notes = []
 
 
-# Home route
+async def summarize_note(note: Note):
+    await asyncio.sleep(2)
+
+    if len(note.content) <= 50:
+        return note.content
+
+    return note.content[:50] + "..."
+
+
+async def analyze_sentiment(note: Note):
+    await asyncio.sleep(2)
+
+    positive_words = ["good", "great", "love", "excellent", "happy"]
+
+    for word in positive_words:
+        if word.lower() in note.content.lower():
+            return "Positive"
+
+    return "Neutral"
+
+
+async def extract_keywords(note: Note):
+    await asyncio.sleep(2)
+
+    words = note.content.split()
+
+    return words[:5]
+
+
 @app.get("/")
-def home(app_name: str = Depends(get_app_name)):
+async def home(app_name: str = Depends(get_app_name)):
     return {
         "message": "Welcome to Notes API",
         "app": app_name
     }
 
 
-# Create a note
 @app.post("/notes", status_code=status.HTTP_201_CREATED)
-def create_note(
+async def create_note(
     note: Note,
     notes_storage=Depends(get_notes_storage)
 ):
+    await asyncio.sleep(2)
+
     notes_storage.append(note)
+
     return note
 
 
-# Get all notes
 @app.get("/notes")
-def get_notes(
+async def get_notes(
     notes_storage=Depends(get_notes_storage)
 ):
+    await asyncio.sleep(1)
+
     return notes_storage
 
 
-# Get a single note
 @app.get("/notes/{note_id}")
-def get_note(
+async def get_note(
     note_id: int,
     notes_storage=Depends(get_notes_storage)
 ):
+    await asyncio.sleep(1)
+
     for note in notes_storage:
         if note.id == note_id:
             return note
@@ -64,13 +96,14 @@ def get_note(
     )
 
 
-# Update a note
 @app.put("/notes/{note_id}")
-def update_note(
+async def update_note(
     note_id: int,
     updated_note: Note,
     notes_storage=Depends(get_notes_storage)
 ):
+    await asyncio.sleep(2)
+
     for index, note in enumerate(notes_storage):
         if note.id == note_id:
             notes_storage[index] = updated_note
@@ -82,16 +115,48 @@ def update_note(
     )
 
 
-# Delete a note
 @app.delete("/notes/{note_id}")
-def delete_note(
+async def delete_note(
+    note_id: int,
+    notes_storage=Depends(get_notes_storage)
+):
+    await asyncio.sleep(1)
+
+    for note in notes_storage:
+        if note.id == note_id:
+            notes_storage.remove(note)
+
+            return {
+                "message": "Note deleted successfully"
+            }
+
+    raise HTTPException(
+        status_code=404,
+        detail="Note not found"
+    )
+
+
+@app.get("/notes/{note_id}/analyze")
+async def analyze_note(
     note_id: int,
     notes_storage=Depends(get_notes_storage)
 ):
     for note in notes_storage:
         if note.id == note_id:
-            notes_storage.remove(note)
-            return {"message": "Note deleted successfully"}
+
+            summary, sentiment, keywords = await asyncio.gather(
+                summarize_note(note),
+                analyze_sentiment(note),
+                extract_keywords(note)
+            )
+
+            return {
+                "id": note.id,
+                "title": note.title,
+                "summary": summary,
+                "sentiment": sentiment,
+                "keywords": keywords
+            }
 
     raise HTTPException(
         status_code=404,
