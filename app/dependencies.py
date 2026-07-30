@@ -1,4 +1,4 @@
-from config import settings
+from app.config import settings
 
 
 def get_app_name():
@@ -6,5 +6,5 @@ def get_app_name():
 
 
 def get_notes_storage():
-    from main import notes
+    from app.main import notes
     return notes
