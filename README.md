@@ -1,125 +1,201 @@
 # Notes API
 
-A simple RESTful Notes API built with **FastAPI**. This project demonstrates CRUD (Create, Read, Update, Delete) operations using in-memory storage and data validation with **Pydantic v2**.
+A RESTful Notes API built with **FastAPI** that supports CRUD operations, JWT authentication using OAuth2 Password Flow, and automated API testing with **pytest** and **httpx**.
+
+---
 
 ## Features
 
-* Create a note
-* View all notes
-* View a single note by ID
-* Update an existing note
-* Delete a note
-* Request validation using Pydantic v2
-* Interactive API documentation with Swagger UI and ReDoc
+* Create, Read, Update, and Delete (CRUD) notes
+* JWT Authentication with OAuth2 Password Flow
+* Protected Notes endpoints
+* Pydantic v2 request validation
+* Layered project architecture:
 
-## Technologies Used
+  * Routers
+  * Services
+  * Repositories
+* Interactive API documentation using Swagger UI
+* Automated API tests with pytest and httpx
 
-* Python 3
-* FastAPI
-* Pydantic v2
-* Pydantic Settings
-* Uvicorn
+---
 
 ## Project Structure
 
 ```text
 notes-api/
+│
+├── app/
+│   ├── models/
+│   ├── repositories/
+│   ├── routers/
+│   ├── schemas/
+│   ├── services/
+│   ├── config.py
+│   ├── dependencies.py
+│   └── main.py
+│
+├── tests/
+│   ├── __init__.py
+│   └── test_notes.py
+│
 ├── .env
-├── .gitignore
-├── config.py
-├── main.py
 ├── pyproject.toml
 ├── README.md
 └── uv.lock
 ```
 
+---
+
+## Technologies Used
+
+* Python 3.13
+* FastAPI
+* Uvicorn
+* Pydantic v2
+* OAuth2 Password Flow
+* JWT (JSON Web Tokens)
+* python-jose
+* pytest
+* pytest-asyncio
+* httpx
+
+---
+
 ## Installation
 
-1. Clone the repository:
+Clone the repository:
 
 ```bash
 git clone https://github.com/Mahnoor-Omar/notes-api.git
 ```
 
-2. Navigate to the project directory:
+Navigate to the project directory:
 
 ```bash
 cd notes-api
 ```
 
-3. Create and activate a virtual environment (if needed).
-
-4. Install the dependencies:
+Install the dependencies:
 
 ```bash
 uv sync
 ```
 
-## Environment Variables
+If you don't use `uv`, you can install dependencies with pip:
 
-Create a `.env` file in the project root with the following values:
-
-```text
-APP_NAME=Notes API
-DEBUG=True
-API_VERSION=v1
+```bash
+pip install -r requirements.txt
 ```
+
+---
 
 ## Running the Application
 
-Start the development server with:
+Start the FastAPI server:
 
 ```bash
-uv run uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 The API will be available at:
 
-```text
+```
 http://127.0.0.1:8000
 ```
+
+---
 
 ## API Documentation
 
 Swagger UI:
 
-```text
+```
 http://127.0.0.1:8000/docs
 ```
 
 ReDoc:
 
-```text
+```
 http://127.0.0.1:8000/redoc
 ```
 
-## API Endpoints
+---
 
-| Method | Endpoint           | Description           |
-| ------ | ------------------ | --------------------- |
-| GET    | `/`                | Welcome message       |
-| POST   | `/notes`           | Create a new note     |
-| GET    | `/notes`           | Retrieve all notes    |
-| GET    | `/notes/{note_id}` | Retrieve a note by ID |
-| PUT    | `/notes/{note_id}` | Update a note         |
-| DELETE | `/notes/{note_id}` | Delete a note         |
+## Authentication
 
-## Example Note
+This project uses **OAuth2 Password Flow** with **JWT** authentication.
 
-```json
-{
-  "id": 1,
-  "title": "Shopping",
-  "content": "Buy milk"
-}
+To access protected Notes endpoints:
+
+1. Open Swagger UI.
+2. Use the **POST /login** endpoint with valid credentials.
+3. Click the **Authorize** button.
+4. Enter your credentials and authorize.
+5. Swagger will automatically include the JWT token in subsequent requests.
+
+After authorization, you can access all protected Notes endpoints.
+
+---
+
+## Running Tests
+
+Run all tests:
+
+```bash
+pytest
 ```
 
-## Notes
+Or run with verbose output:
 
-* Notes are stored in memory using a Python list.
-* Data is not persisted after the server is stopped or restarted.
-* Input data is automatically validated using Pydantic v2.
+```bash
+pytest -v
+```
+
+The project includes automated tests for:
+
+* Successful login
+* Invalid login
+* Creating a note with authentication
+* Retrieving notes with authentication
+* Unauthorized access to protected endpoints
+
+---
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description                                      |
+| ------ | -------- | ------------------------------------------------ |
+| POST   | `/login` | Authenticate user and receive a JWT access token |
+
+### Notes
+
+| Method | Endpoint           | Description                           |
+| ------ | ------------------ | ------------------------------------- |
+| POST   | `/notes`           | Create a new note (Authenticated)     |
+| GET    | `/notes`           | Retrieve all notes (Authenticated)    |
+| GET    | `/notes/{note_id}` | Retrieve a note by ID (Authenticated) |
+| PUT    | `/notes/{note_id}` | Update a note (Authenticated)         |
+| DELETE | `/notes/{note_id}` | Delete a note (Authenticated)         |
+
+---
+
+## Future Improvements
+
+* Store users and notes in a database
+* Hash passwords using bcrypt
+* Add user registration
+* Implement refresh tokens
+* Add pagination and filtering
+* Increase automated test coverage
+* Dockerize the application
+
+---
 
 ## Author
 
 **Mahnoor Omar**
+
+This project was developed as part of a FastAPI backend learning milestone covering API development, authentication, project architecture, and automated testing.
